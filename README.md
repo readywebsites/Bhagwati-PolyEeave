@@ -1,0 +1,1 @@
+Open index.html. This is an HTML/CSS/JS starter. Replace placeholder company details and product visuals with the client's actual content/images.
