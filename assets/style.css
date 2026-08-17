@@ -513,16 +513,17 @@ p:last-child {
     position: fixed;
     top: 0;
     right: -320px;
-    width: 300px;
+    width: min(300px, 85vw);
     height: 100vh;
     background-color: var(--bg-white);
     z-index: 1200;
     padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     transition: right var(--transition-smooth);
     box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
 }
 
 .mobile-nav-drawer.active {
@@ -1763,10 +1764,20 @@ p:last-child {
 
 @media (max-width: 992px) {
     .mobile-toggle {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .nav-menu, .topbar {
-        display: none;
+        display: none !important;
+    }
+    .header-actions .open-quote-modal,
+    .header-actions .btn {
+        display: none !important;
+    }
+    .mobile-nav-drawer .open-quote-modal,
+    .mobile-nav-drawer .btn {
+        display: none !important;
     }
     .hero-cinematic-wrap {
         height: 85vh;
@@ -1996,6 +2007,10 @@ p:last-child {
 }
 
 @media (max-width: 480px) {
+    .site-logo {
+        width: 140px;
+        height: auto;
+    }
     .stats-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
