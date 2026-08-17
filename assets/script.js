@@ -1,7 +1,6 @@
 /**
  * BHAGWATI POLYWEAVE / VARDHMAN POLYFAB
- * Cinematic Video Hero & 3D Interactive Motion Controller
- * Avadh Projects-Inspired Visual Transitions & Jiro Precision
+ * Cinematic Video Hero, 3D Interactive Motion & Mobile Product Carousel Controller
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,18 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroWrap = document.querySelector('.hero-cinematic-wrap');
     const scrollIndicator = document.querySelector('.hero-scroll-indicator');
 
-    // Video auto-play reliability and fade-in
     if (heroVideo) {
         heroVideo.addEventListener('loadeddata', () => {
             heroVideo.classList.add('loaded');
         });
-        // If already cached/loaded
         if (heroVideo.readyState >= 2) {
             heroVideo.classList.add('loaded');
         }
     }
 
-    // Scroll to explore click handler
     if (scrollIndicator) {
         scrollIndicator.addEventListener('click', () => {
             const nextSection = document.querySelector('.stats-bar-section') || document.querySelector('#product-story');
@@ -36,10 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Avadh-Style Cinematic Video Scroll Transition
-    let lastScrollY = window.scrollY;
+    // Video Scroll Scaling
     let isTicking = false;
-
     function onScrollTransitions() {
         const scrollY = window.scrollY;
         const heroHeight = heroWrap ? heroWrap.offsetHeight : 700;
@@ -47,14 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scrollY <= heroHeight + 100) {
             const progress = Math.min(Math.max(scrollY / heroHeight, 0), 1);
 
-            // Scale video slightly from 1 down to 0.94 and translate
             if (heroVideoContainer && !prefersReducedMotion) {
                 const scale = 1 - (progress * 0.08);
                 const translateY = progress * 40;
                 heroVideoContainer.style.transform = `scale(${scale.toFixed(3)}) translateY(${translateY.toFixed(1)}px)`;
             }
 
-            // Fade and translate hero content upward
             if (heroContent && !prefersReducedMotion) {
                 const contentOpacity = Math.max(1 - (progress * 1.5), 0);
                 const contentTranslate = -progress * 60;
@@ -62,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 heroContent.style.transform = `translateY(${contentTranslate.toFixed(1)}px)`;
             }
 
-            // Fade out scroll indicator immediately on initial scroll
             if (scrollIndicator) {
                 const indOpacity = Math.max(1 - (progress * 3.5), 0);
                 scrollIndicator.style.opacity = indOpacity.toFixed(2);
@@ -104,11 +95,178 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ================= 3. PRODUCT CARDS 3D PERSPECTIVE HOVER ================= */
+    /* ================= 3. MOBILE PRODUCT CAROUSEL (<= 768px) ================= */
+    const carouselWrapper = document.querySelector('.product-carousel-wrapper');
+    const carouselTrack = document.querySelector('.product-carousel-track');
+    const slides = document.querySelectorAll('.product-carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+    let autoPlayInterval = null;
+    let pauseTimeout = null;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchCurrentX = 0;
+    let isSwiping = false;
+
+    function isMobileView() {
+        return window.innerWidth <= 768;
+    }
+
+    function updateCarousel(animate = true) {
+        if (!isMobileView() || !carouselTrack || totalSlides === 0) return;
+
+        if (animate) {
+            carouselTrack.style.transition = 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
+        } else {
+            carouselTrack.style.transition = 'none';
+        }
+
+        const translatePercent = -(currentSlide * 100);
+        carouselTrack.style.transform = `translateX(${translatePercent}%)`;
+
+        // Update active slide classes for scale & opacity
+        slides.forEach((slide, idx) => {
+            if (idx === currentSlide) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+
+        // Update pagination dots
+        dots.forEach((dot, idx) => {
+            if (idx === currentSlide) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    function goToSlide(index, animate = true) {
+        currentSlide = (index + totalSlides) % totalSlides;
+        updateCarousel(animate);
+    }
+
+    function nextCarouselSlide() {
+        goToSlide(currentSlide + 1);
+    }
+
+    function prevCarouselSlide() {
+        goToSlide(currentSlide - 1);
+    }
+
+    function startAutoPlay() {
+        stopAutoPlay();
+        if (isMobileView() && !prefersReducedMotion) {
+            autoPlayInterval = setInterval(nextCarouselSlide, 3500);
+        }
+    }
+
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+
+    function handleUserInteraction() {
+        stopAutoPlay();
+        clearTimeout(pauseTimeout);
+        pauseTimeout = setTimeout(() => {
+            startAutoPlay();
+        }, 5000);
+    }
+
+    // Touch Swipe Handlers
+    if (carouselWrapper) {
+        carouselWrapper.addEventListener('touchstart', (e) => {
+            if (!isMobileView()) return;
+            handleUserInteraction();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchCurrentX = touchStartX;
+            isSwiping = true;
+        }, { passive: true });
+
+        carouselWrapper.addEventListener('touchmove', (e) => {
+            if (!isSwiping || !isMobileView()) return;
+            touchCurrentX = e.touches[0].clientX;
+        }, { passive: true });
+
+        carouselWrapper.addEventListener('touchend', () => {
+            if (!isSwiping || !isMobileView()) return;
+            isSwiping = false;
+            const diffX = touchStartX - touchCurrentX;
+            const threshold = 40; // minimum swipe distance in px
+
+            if (diffX > threshold) {
+                // Swiped Left -> Next Slide
+                nextCarouselSlide();
+            } else if (diffX < -threshold) {
+                // Swiped Right -> Prev Slide
+                prevCarouselSlide();
+            }
+        });
+    }
+
+    // Button & Dot Controls
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            handleUserInteraction();
+            prevCarouselSlide();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            handleUserInteraction();
+            nextCarouselSlide();
+        });
+    }
+
+    dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+            handleUserInteraction();
+            goToSlide(idx);
+        });
+    });
+
+    // Resize Handler to seamlessly toggle Carousel vs Desktop Grid
+    function handleResize() {
+        if (isMobileView()) {
+            goToSlide(currentSlide, false);
+            startAutoPlay();
+        } else {
+            stopAutoPlay();
+            if (carouselTrack) {
+                carouselTrack.style.transform = 'none';
+                carouselTrack.style.transition = 'none';
+            }
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+        }
+    }
+
+    window.addEventListener('resize', handleResize, { passive: true });
+
+    // Initial Setup
+    if (isMobileView()) {
+        goToSlide(0, false);
+        startAutoPlay();
+    }
+
+    /* ================= 4. DESKTOP PRODUCT CARDS 3D PERSPECTIVE HOVER ================= */
     const productCards = document.querySelectorAll('.product-card-3d');
     if (productCards.length > 0 && !prefersReducedMotion && !isTouchDevice) {
         productCards.forEach(card => {
             card.addEventListener('mousemove', (e) => {
+                if (isMobileView()) return;
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -120,12 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             card.addEventListener('mouseleave', () => {
+                if (isMobileView()) return;
                 card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
             });
         });
     }
 
-    /* ================= 4. MANUFACTURING TIMELINE SCROLL PROGRESSION ================= */
+    /* ================= 5. MANUFACTURING TIMELINE SCROLL PROGRESSION ================= */
     const processSection = document.querySelector('.process-section');
     const processProgressBar = document.querySelector('.process-timeline-progress-fill');
     const stepNodes = document.querySelectorAll('.process-step-node');
@@ -168,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    /* ================= 5. STATISTICS ANIMATED COUNTER (WITH IMMEDIATE FALLBACK) ================= */
+    /* ================= 6. STATISTICS ANIMATED COUNTER (WITH IMMEDIATE FALLBACK) ================= */
     const statElements = document.querySelectorAll('.stat-number');
     let countersAnimated = false;
 
@@ -181,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetValue = parseInt(stat.getAttribute('data-target') || stat.textContent.trim(), 10);
                 if (isNaN(targetValue)) return;
 
-                const duration = 1800; // ms
+                const duration = 1800;
                 const startTime = performance.now();
 
                 function updateCounter(currentTime) {
@@ -208,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', animateStats, { passive: true });
     animateStats();
 
-    /* ================= 6. SCROLL REVEAL (INTERSECTION OBSERVER) ================= */
+    /* ================= 7. SCROLL REVEAL (INTERSECTION OBSERVER) ================= */
     const revealElements = document.querySelectorAll('.reveal-init');
 
     if ('IntersectionObserver' in window && revealElements.length > 0) {
@@ -229,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         revealElements.forEach(el => el.classList.add('revealed'));
     }
 
-    /* ================= 7. STICKY HEADER ELEVATION ================= */
+    /* ================= 8. STICKY HEADER ELEVATION ================= */
     const siteHeader = document.querySelector('.site-header');
     window.addEventListener('scroll', () => {
         if (siteHeader) {
@@ -243,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: true });
 
-    /* ================= 8. RFQ QUOTE MODAL ================= */
+    /* ================= 9. RFQ QUOTE MODAL ================= */
     const modal = document.getElementById('quoteModal');
     const openQuoteBtns = document.querySelectorAll('.open-quote-modal');
     const closeQuoteBtn = document.querySelector('.modal-close');
@@ -295,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /* ================= 9. MOBILE NAVIGATION DRAWER ================= */
+    /* ================= 10. MOBILE NAVIGATION DRAWER ================= */
     const mobileToggle = document.querySelector('.mobile-toggle');
     const mobileDrawer = document.querySelector('.mobile-nav-drawer');
     const mobileOverlay = document.querySelector('.mobile-nav-overlay');
@@ -321,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileClose) mobileClose.addEventListener('click', closeMobileNav);
     if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileNav);
 
-    /* ================= 10. BACK TO TOP BUTTON ================= */
+    /* ================= 11. BACK TO TOP BUTTON ================= */
     const backToTopBtn = document.querySelector('.back-to-top');
     if (backToTopBtn) {
         window.addEventListener('scroll', () => {
@@ -337,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ================= 11. FORM SUBMISSION FEEDBACK ================= */
+    /* ================= 12. FORM SUBMISSION FEEDBACK ================= */
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', (e) => {
