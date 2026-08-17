@@ -1,212 +1,106 @@
 /**
  * BHAGWATI POLYWEAVE / VARDHMAN POLYFAB
- * Modern 3D BOPP Packaging Interactive Controller
- * Jiro-Inspired Motion & 2.5D Experience
+ * Cinematic Video Hero & 3D Interactive Motion Controller
+ * Avadh Projects-Inspired Visual Transitions & Jiro Precision
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Motion preference & touch screen check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth < 992);
 
-    /* ================= 1. JIRO-INSPIRED 3D HERO MOUSE PARALLAX & TILT ================= */
-    const heroStageCard = document.querySelector('.hero-stage-card');
-    const heroProductImg = document.querySelector('.hero-product-img');
-    const heroFloorShadow = document.querySelector('.hero-floor-shadow');
-    const heroBackdropGlow = document.querySelector('.hero-backdrop-glow');
-    const floatingBadges = document.querySelectorAll('.floating-3d-badge');
-    const heroContainer = document.querySelector('.hero-stage-container');
+    /* ================= 1. CINEMATIC HERO VIDEO & SCROLL TRANSITION ================= */
+    const heroVideo = document.querySelector('.hero-video-bg');
+    const heroVideoContainer = document.querySelector('.hero-video-container');
+    const heroContent = document.querySelector('.hero-cinematic-content');
+    const heroWrap = document.querySelector('.hero-cinematic-wrap');
+    const scrollIndicator = document.querySelector('.hero-scroll-indicator');
 
-    if (heroStageCard && heroContainer && !prefersReducedMotion && !isTouchDevice) {
-        let mouseX = 0, mouseY = 0;
-        let currentRx = 0, currentRy = 0;
-        let targetRx = 0, targetRy = 0;
-        let glowTx = 0, glowTy = 0;
-        let targetGlowTx = 0, targetGlowTy = 0;
-        let isHovered = false;
-
-        heroContainer.addEventListener('mouseenter', () => {
-            isHovered = true;
+    // Video auto-play reliability and fade-in
+    if (heroVideo) {
+        heroVideo.addEventListener('loadeddata', () => {
+            heroVideo.classList.add('loaded');
         });
+        // If already cached/loaded
+        if (heroVideo.readyState >= 2) {
+            heroVideo.classList.add('loaded');
+        }
+    }
 
-        heroContainer.addEventListener('mousemove', (e) => {
-            const rect = heroContainer.getBoundingClientRect();
+    // Scroll to explore click handler
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', () => {
+            const nextSection = document.querySelector('.stats-bar-section') || document.querySelector('#product-story');
+            if (nextSection) {
+                nextSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // Avadh-Style Cinematic Video Scroll Transition
+    let lastScrollY = window.scrollY;
+    let isTicking = false;
+
+    function onScrollTransitions() {
+        const scrollY = window.scrollY;
+        const heroHeight = heroWrap ? heroWrap.offsetHeight : 700;
+
+        if (scrollY <= heroHeight + 100) {
+            const progress = Math.min(Math.max(scrollY / heroHeight, 0), 1);
+
+            // Scale video slightly from 1 down to 0.94 and translate
+            if (heroVideoContainer && !prefersReducedMotion) {
+                const scale = 1 - (progress * 0.08);
+                const translateY = progress * 40;
+                heroVideoContainer.style.transform = `scale(${scale.toFixed(3)}) translateY(${translateY.toFixed(1)}px)`;
+            }
+
+            // Fade and translate hero content upward
+            if (heroContent && !prefersReducedMotion) {
+                const contentOpacity = Math.max(1 - (progress * 1.5), 0);
+                const contentTranslate = -progress * 60;
+                heroContent.style.opacity = contentOpacity.toFixed(2);
+                heroContent.style.transform = `translateY(${contentTranslate.toFixed(1)}px)`;
+            }
+
+            // Fade out scroll indicator immediately on initial scroll
+            if (scrollIndicator) {
+                const indOpacity = Math.max(1 - (progress * 3.5), 0);
+                scrollIndicator.style.opacity = indOpacity.toFixed(2);
+            }
+        }
+
+        isTicking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!isTicking) {
+            window.requestAnimationFrame(onScrollTransitions);
+            isTicking = true;
+        }
+    }, { passive: true });
+
+    onScrollTransitions();
+
+    /* ================= 2. PRODUCT STORY EMERGENCE PARALLAX ================= */
+    const productStoryImg = document.querySelector('.product-story-img');
+    const productStoryStage = document.querySelector('.product-story-stage');
+
+    if (productStoryStage && productStoryImg && !prefersReducedMotion && !isTouchDevice) {
+        productStoryStage.addEventListener('mousemove', (e) => {
+            const rect = productStoryStage.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            // Normalized coordinates (-1 to 1)
-            const normX = (x - centerX) / centerX;
-            const normY = (y - centerY) / centerY;
+            const rotateX = -((y - centerY) / centerY) * 12;
+            const rotateY = ((x - centerX) / centerX) * 14;
 
-            // Target 3D rotation angles
-            targetRy = normX * 16;  // Rotate around Y axis
-            targetRx = -normY * 14; // Rotate around X axis
-
-            // Background glow tracking
-            targetGlowTx = normX * 40;
-            targetGlowTy = normY * 30;
+            productStoryStage.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
         });
 
-        heroContainer.addEventListener('mouseleave', () => {
-            isHovered = false;
-            targetRx = 0;
-            targetRy = 0;
-            targetGlowTx = 0;
-            targetGlowTy = 0;
-        });
-
-        // Animation loop for ultra-fluid physics (Lerp)
-        function render3DHero() {
-            if (!prefersReducedMotion && !isTouchDevice) {
-                const factor = isHovered ? 0.085 : 0.05;
-                currentRx += (targetRx - currentRx) * factor;
-                currentRy += (targetRy - currentRy) * factor;
-                glowTx += (targetGlowTx - glowTx) * factor;
-                glowTy += (targetGlowTy - glowTy) * factor;
-
-                heroStageCard.style.transform = `rotateX(${currentRx.toFixed(2)}deg) rotateY(${currentRy.toFixed(2)}deg)`;
-
-                // Dynamic Floor Shadow movement
-                if (heroFloorShadow) {
-                    const shadowTx = currentRy * -1.2;
-                    const shadowScale = 1 - Math.abs(currentRx) * 0.015;
-                    heroFloorShadow.style.transform = `rotateX(65deg) translate(${shadowTx.toFixed(1)}px, 0px) scale(${shadowScale.toFixed(2)})`;
-                }
-
-                // Dynamic Ambient Glow
-                if (heroBackdropGlow) {
-                    heroBackdropGlow.style.transform = `translateY(-50%) translate(${glowTx.toFixed(1)}px, ${glowTy.toFixed(1)}px)`;
-                }
-
-                // Multi-Depth Badges Parallax
-                floatingBadges.forEach((badge) => {
-                    const depth = parseFloat(badge.getAttribute('data-depth') || '1');
-                    const badgeTx = currentRy * depth * 0.95;
-                    const badgeTy = currentRx * depth * -0.95;
-                    const baseZ = badge.classList.contains('floating-badge-top-right') ? 60 : 
-                                  badge.classList.contains('floating-badge-bottom-right') ? 70 : 40;
-                    badge.style.transform = `translateZ(${baseZ}px) translate(${badgeTx.toFixed(1)}px, ${badgeTy.toFixed(1)}px)`;
-                });
-            }
-            requestAnimationFrame(render3DHero);
-        }
-
-        render3DHero();
-    }
-
-    /* ================= 2. HERO PRODUCT SWITCHER (500–800ms TRANSITION) ================= */
-    const productTabs = document.querySelectorAll('.product-switch-tab');
-    const heroMainImg = document.querySelector('.hero-product-img');
-    const heroBadgeTopRight = document.querySelector('.floating-badge-top-right .floating-badge-info strong');
-    const heroBadgeTopRightSub = document.querySelector('.floating-badge-top-right .floating-badge-info span');
-    const heroBadgeBottomLeft = document.querySelector('.floating-badge-bottom-left .floating-badge-info strong');
-    const heroBadgeBottomLeftSub = document.querySelector('.floating-badge-bottom-left .floating-badge-info span');
-
-    const heroProductData = {
-        'rice': {
-            img: 'assets/images/bopp-rice-bag.jpg',
-            alt: 'Premium BOPP Woven Rice Bag with Handles',
-            badge1Title: '10-Color HD Gravure',
-            badge1Sub: 'High-Gloss Rice Packaging',
-            badge2Title: '100% Virgin Polymer',
-            badge2Sub: 'Zero-Pinhole Extrusion Bond'
-        },
-        'fertilizer': {
-            img: 'assets/images/bopp-fertilizer-bag.jpg',
-            alt: 'Heavy-Duty BOPP Fertilizer & Agro Sack',
-            badge1Title: 'Micro-Perforated',
-            badge1Sub: 'Chemical & Moisture Barrier',
-            badge2Title: '50kg Load Tenacity',
-            badge2Sub: 'Corrosion-Resistant Liner'
-        },
-        'cement': {
-            img: 'assets/images/bopp-cement-bag.jpg',
-            alt: 'AD*STAR Block Bottom Valve Cement Sack',
-            badge1Title: 'Block Bottom Valve',
-            badge1Sub: 'Zero-Spillage Rotor Packing',
-            badge2Title: 'Self-Closing Seal',
-            badge2Sub: 'High-Speed Automated Line'
-        },
-        'feed': {
-            img: 'assets/images/bopp-animal-feed.jpg',
-            alt: 'Aroma-Sealed BOPP Animal Feed & Pet Food Bag',
-            badge1Title: 'Aroma & Fat Barrier',
-            badge1Sub: 'Multi-Layer Pet Food Sacks',
-            badge2Title: 'D-Cut Handle Option',
-            badge2Sub: 'Side Gusset Brand Print'
-        },
-        'sugar': {
-            img: 'assets/images/bopp-sugar-bag.jpg',
-            alt: 'Food-Grade BOPP Laminated Sugar Bag',
-            badge1Title: 'Food Grade BRCGS',
-            badge1Sub: 'Anti-Caking Extrusion Seal',
-            badge2Title: '100% FDA Approved',
-            badge2Sub: 'Crystal Moisture Protection'
-        }
-    };
-
-    let isSwitching = false;
-
-    if (productTabs.length > 0 && heroMainImg) {
-        productTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (isSwitching || tab.classList.contains('active')) return;
-                isSwitching = true;
-
-                productTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                const key = tab.getAttribute('data-product-key');
-                const data = heroProductData[key];
-
-                if (data) {
-                    // Outgoing 3D scale-down & rotation
-                    heroMainImg.classList.add('switching-out');
-                    heroMainImg.classList.remove('switching-in');
-
-                    // Fade out badge texts smoothly
-                    if (heroBadgeTopRight) heroBadgeTopRight.style.opacity = '0.2';
-                    if (heroBadgeTopRightSub) heroBadgeTopRightSub.style.opacity = '0.2';
-                    if (heroBadgeBottomLeft) heroBadgeBottomLeft.style.opacity = '0.2';
-                    if (heroBadgeBottomLeftSub) heroBadgeBottomLeftSub.style.opacity = '0.2';
-
-                    setTimeout(() => {
-                        heroMainImg.src = data.img;
-                        heroMainImg.alt = data.alt;
-
-                        if (heroBadgeTopRight) {
-                            heroBadgeTopRight.textContent = data.badge1Title;
-                            heroBadgeTopRight.style.opacity = '1';
-                        }
-                        if (heroBadgeTopRightSub) {
-                            heroBadgeTopRightSub.textContent = data.badge1Sub;
-                            heroBadgeTopRightSub.style.opacity = '1';
-                        }
-                        if (heroBadgeBottomLeft) {
-                            heroBadgeBottomLeft.textContent = data.badge2Title;
-                            heroBadgeBottomLeft.style.opacity = '1';
-                        }
-                        if (heroBadgeBottomLeftSub) {
-                            heroBadgeBottomLeftSub.textContent = data.badge2Sub;
-                            heroBadgeBottomLeftSub.style.opacity = '1';
-                        }
-
-                        // Incoming 3D scale-up & rotation into place
-                        heroMainImg.classList.remove('switching-out');
-                        heroMainImg.classList.add('switching-in');
-
-                        setTimeout(() => {
-                            heroMainImg.classList.remove('switching-in');
-                            isSwitching = false;
-                        }, 500);
-                    }, 280);
-                } else {
-                    isSwitching = false;
-                }
-            });
+        productStoryStage.addEventListener('mouseleave', () => {
+            productStoryStage.style.transform = 'rotateX(0deg) rotateY(0deg)';
         });
     }
 
@@ -248,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const fillPercent = Math.min(100, progress * 130);
             processProgressBar.style.width = `${fillPercent}%`;
 
-            // Highlight step nodes progressively
             stepNodes.forEach((node, idx) => {
                 const nodeThreshold = (idx + 0.5) / stepNodes.length;
                 if (progress >= nodeThreshold) {
@@ -263,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', updateProcessTimeline, { passive: true });
     updateProcessTimeline();
 
-    // Hover on step nodes to highlight progress
     stepNodes.forEach((node, idx) => {
         node.addEventListener('mouseenter', () => {
             stepNodes.forEach((n, i) => {
@@ -289,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetValue = parseInt(stat.getAttribute('data-target') || stat.textContent.trim(), 10);
                 if (isNaN(targetValue)) return;
 
-                let startValue = 0;
                 const duration = 1800; // ms
                 const startTime = performance.now();
 
@@ -315,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('scroll', animateStats, { passive: true });
-    animateStats(); // Initial check
+    animateStats();
 
     /* ================= 6. SCROLL REVEAL (INTERSECTION OBSERVER) ================= */
     const revealElements = document.querySelectorAll('.reveal-init');
