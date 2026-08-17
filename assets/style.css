@@ -1,6 +1,6 @@
 /* ==========================================================================
    BHAGWATI POLYWEAVE / VARDHMAN POLYFAB - INDUSTRIAL LUXURY DESIGN SYSTEM
-   Cinematic Full-Screen Video Hero, 3D Architecture & Mobile Product Carousel
+   Cinematic Full-Screen Video Hero, 3D Architecture & Mobile Product / App Carousels
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -1106,11 +1106,6 @@ p:last-child {
     gap: 0.55rem;
 }
 
-/* Mobile Carousel Navigation Controls (hidden on desktop) */
-.mobile-carousel-controls {
-    display: none;
-}
-
 /* ================= 12. CINEMATIC MANUFACTURING PROCESS ================= */
 .process-section {
     background-color: var(--bg-white);
@@ -1201,11 +1196,17 @@ p:last-child {
     color: var(--text-muted);
 }
 
-/* ================= 13. TARGET APPLICATIONS GRID ================= */
+/* ================= 13. TARGET APPLICATIONS GRID & CAROUSEL ================= */
+.app-carousel-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .applications-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.75rem;
+    width: 100%;
 }
 
 .app-card {
@@ -1302,6 +1303,11 @@ p:last-child {
 
 .app-card:hover .app-card-arrow {
     gap: 0.65rem;
+}
+
+/* Mobile Carousel Navigation Controls (hidden on desktop) */
+.mobile-carousel-controls {
+    display: none;
 }
 
 /* ================= 14. QUALITY SECTION (DARK LUXURY) ================= */
@@ -1723,7 +1729,7 @@ p:last-child {
 
 /* ================= 20. RESPONSIVE BREAKPOINTS ================= */
 @media (max-width: 1200px) {
-    .product-grid-4 {
+    .product-grid-4, .applications-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     .process-timeline-grid {
@@ -1732,9 +1738,6 @@ p:last-child {
     }
     .process-timeline-progress-bar {
         display: none;
-    }
-    .applications-grid {
-        grid-template-columns: repeat(2, 1fr);
     }
     .footer-grid {
         grid-template-columns: 1fr 1fr;
@@ -1766,7 +1769,7 @@ p:last-child {
     }
 }
 
-/* ================= 21. MOBILE SPECIFIC (<= 768px): PREMIUM PRODUCT CAROUSEL ================= */
+/* ================= 21. MOBILE SPECIFIC (<= 768px): PREMIUM PRODUCT & APPLICATION CAROUSELS ================= */
 @media (max-width: 768px) {
     .section {
         padding: 4rem 0;
@@ -1777,9 +1780,6 @@ p:last-child {
     }
     .process-timeline-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-    .applications-grid {
-        grid-template-columns: 1fr;
     }
     .quality-card-list {
         grid-template-columns: 1fr;
@@ -1805,8 +1805,9 @@ p:last-child {
         max-height: 300px;
     }
 
-    /* MOBILE HORIZONTAL CAROUSEL ARCHITECTURE */
-    .product-carousel-wrapper {
+    /* SHARED MOBILE HORIZONTAL CAROUSEL ARCHITECTURE */
+    .product-carousel-wrapper,
+    .app-carousel-wrapper {
         position: relative;
         width: 100%;
         max-width: 100%;
@@ -1815,7 +1816,8 @@ p:last-child {
         perspective: 1200px;
     }
 
-    .product-grid-4.product-carousel-track {
+    .product-grid-4.product-carousel-track,
+    .applications-grid.app-carousel-track {
         display: flex;
         flex-direction: row;
         width: 100%;
@@ -1826,7 +1828,8 @@ p:last-child {
         will-change: transform;
     }
 
-    .product-card-3d.product-carousel-slide {
+    .product-card-3d.product-carousel-slide,
+    .app-card.app-carousel-slide {
         flex: 0 0 100%;
         width: 100%;
         min-width: 100%;
@@ -1839,12 +1842,17 @@ p:last-child {
         pointer-events: none;
     }
 
-    .product-card-3d.product-carousel-slide.active {
+    .product-card-3d.product-carousel-slide.active,
+    .app-card.app-carousel-slide.active {
         opacity: 1;
         transform: scale(1);
         pointer-events: auto;
         box-shadow: 0 20px 45px -10px rgba(7, 21, 38, 0.2), 0 0 0 1px rgba(0, 102, 153, 0.25);
-        border-color: rgba(0, 102, 153, 0.35);
+    }
+
+    .app-card.app-carousel-slide {
+        height: 380px;
+        padding: 1.75rem;
     }
 
     .product-card-image {
@@ -1930,6 +1938,10 @@ p:last-child {
     .product-card-image img {
         max-height: 190px;
     }
+    .app-card.app-carousel-slide {
+        height: 350px;
+        padding: 1.5rem;
+    }
 }
 
 /* Accessibility: Reduced Motion */
@@ -1940,7 +1952,7 @@ p:last-child {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-    .product-story-img, .hero-video-container, .product-carousel-track, .product-carousel-slide {
+    .product-story-img, .hero-video-container, .product-carousel-track, .product-carousel-slide, .app-carousel-track, .app-carousel-slide {
         transform: none !important;
         animation: none !important;
         transition: none !important;

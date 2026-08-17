@@ -1,6 +1,6 @@
 /**
  * BHAGWATI POLYWEAVE / VARDHMAN POLYFAB
- * Cinematic Video Hero, 3D Interactive Motion & Mobile Product Carousel Controller
+ * Cinematic Video Hero, 3D Interactive Motion & Mobile Carousels Controller
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,178 +95,199 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ================= 3. MOBILE PRODUCT CAROUSEL (<= 768px) ================= */
-    const carouselWrapper = document.querySelector('.product-carousel-wrapper');
-    const carouselTrack = document.querySelector('.product-carousel-track');
-    const slides = document.querySelectorAll('.product-carousel-slide');
-    const dots = document.querySelectorAll('.carousel-dot');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
+    /* ================= 3. REUSABLE MOBILE HORIZONTAL CAROUSEL FACTORY ================= */
+    function initMobileCarousel(config) {
+        const wrapper = document.querySelector(config.wrapperSelector);
+        const track = document.querySelector(config.trackSelector);
+        const slides = document.querySelectorAll(config.slideSelector);
+        const dots = document.querySelectorAll(config.dotsSelector);
+        const prevBtn = document.querySelector(config.prevSelector);
+        const nextBtn = document.querySelector(config.nextSelector);
+        const delay = config.delay || 3500;
 
-    let currentSlide = 0;
-    const totalSlides = slides.length;
-    let autoPlayInterval = null;
-    let pauseTimeout = null;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchCurrentX = 0;
-    let isSwiping = false;
+        if (!wrapper || !track || slides.length === 0) return null;
 
-    function isMobileView() {
-        return window.innerWidth <= 768;
-    }
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+        let autoPlayInterval = null;
+        let pauseTimeout = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchCurrentX = 0;
+        let isSwiping = false;
 
-    function updateCarousel(animate = true) {
-        if (!isMobileView() || !carouselTrack || totalSlides === 0) return;
-
-        if (animate) {
-            carouselTrack.style.transition = 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
-        } else {
-            carouselTrack.style.transition = 'none';
+        function isMobile() {
+            return window.innerWidth <= 768;
         }
 
-        const translatePercent = -(currentSlide * 100);
-        carouselTrack.style.transform = `translateX(${translatePercent}%)`;
+        function update(animate = true) {
+            if (!isMobile()) return;
 
-        // Update active slide classes for scale & opacity
-        slides.forEach((slide, idx) => {
-            if (idx === currentSlide) {
-                slide.classList.add('active');
+            if (animate) {
+                track.style.transition = 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
             } else {
-                slide.classList.remove('active');
+                track.style.transition = 'none';
             }
-        });
 
-        // Update pagination dots
-        dots.forEach((dot, idx) => {
-            if (idx === currentSlide) {
-                dot.classList.add('active');
-            } else {
-                dot.classList.remove('active');
+            const translatePercent = -(currentSlide * 100);
+            track.style.transform = `translateX(${translatePercent}%)`;
+
+            // Update active state on slides
+            slides.forEach((slide, idx) => {
+                if (idx === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            // Update pagination dots
+            dots.forEach((dot, idx) => {
+                if (idx === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function goTo(index, animate = true) {
+            currentSlide = (index + totalSlides) % totalSlides;
+            update(animate);
+        }
+
+        function next() {
+            goTo(currentSlide + 1);
+        }
+
+        function prev() {
+            goTo(currentSlide - 1);
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            if (isMobile() && !prefersReducedMotion) {
+                autoPlayInterval = setInterval(next, delay);
             }
-        });
-    }
-
-    function goToSlide(index, animate = true) {
-        currentSlide = (index + totalSlides) % totalSlides;
-        updateCarousel(animate);
-    }
-
-    function nextCarouselSlide() {
-        goToSlide(currentSlide + 1);
-    }
-
-    function prevCarouselSlide() {
-        goToSlide(currentSlide - 1);
-    }
-
-    function startAutoPlay() {
-        stopAutoPlay();
-        if (isMobileView() && !prefersReducedMotion) {
-            autoPlayInterval = setInterval(nextCarouselSlide, 3500);
         }
-    }
 
-    function stopAutoPlay() {
-        if (autoPlayInterval) {
-            clearInterval(autoPlayInterval);
-            autoPlayInterval = null;
+        function stopAutoplay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
         }
-    }
 
-    function handleUserInteraction() {
-        stopAutoPlay();
-        clearTimeout(pauseTimeout);
-        pauseTimeout = setTimeout(() => {
-            startAutoPlay();
-        }, 5000);
-    }
+        function handleInteraction() {
+            stopAutoplay();
+            clearTimeout(pauseTimeout);
+            pauseTimeout = setTimeout(() => {
+                startAutoplay();
+            }, 5000);
+        }
 
-    // Touch Swipe Handlers
-    if (carouselWrapper) {
-        carouselWrapper.addEventListener('touchstart', (e) => {
-            if (!isMobileView()) return;
-            handleUserInteraction();
+        // Touch Gestures
+        wrapper.addEventListener('touchstart', (e) => {
+            if (!isMobile()) return;
+            handleInteraction();
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             touchCurrentX = touchStartX;
             isSwiping = true;
         }, { passive: true });
 
-        carouselWrapper.addEventListener('touchmove', (e) => {
-            if (!isSwiping || !isMobileView()) return;
+        wrapper.addEventListener('touchmove', (e) => {
+            if (!isSwiping || !isMobile()) return;
             touchCurrentX = e.touches[0].clientX;
         }, { passive: true });
 
-        carouselWrapper.addEventListener('touchend', () => {
-            if (!isSwiping || !isMobileView()) return;
+        wrapper.addEventListener('touchend', () => {
+            if (!isSwiping || !isMobile()) return;
             isSwiping = false;
             const diffX = touchStartX - touchCurrentX;
-            const threshold = 40; // minimum swipe distance in px
+            const threshold = 40; // minimum swipe distance
 
             if (diffX > threshold) {
-                // Swiped Left -> Next Slide
-                nextCarouselSlide();
+                next(); // swipe left -> next slide
             } else if (diffX < -threshold) {
-                // Swiped Right -> Prev Slide
-                prevCarouselSlide();
+                prev(); // swipe right -> prev slide
             }
         });
-    }
 
-    // Button & Dot Controls
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            handleUserInteraction();
-            prevCarouselSlide();
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            handleUserInteraction();
-            nextCarouselSlide();
-        });
-    }
-
-    dots.forEach((dot, idx) => {
-        dot.addEventListener('click', () => {
-            handleUserInteraction();
-            goToSlide(idx);
-        });
-    });
-
-    // Resize Handler to seamlessly toggle Carousel vs Desktop Grid
-    function handleResize() {
-        if (isMobileView()) {
-            goToSlide(currentSlide, false);
-            startAutoPlay();
-        } else {
-            stopAutoPlay();
-            if (carouselTrack) {
-                carouselTrack.style.transform = 'none';
-                carouselTrack.style.transition = 'none';
-            }
-            slides.forEach(slide => {
-                slide.classList.remove('active');
+        // Navigation Controls
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                handleInteraction();
+                prev();
             });
         }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                handleInteraction();
+                next();
+            });
+        }
+
+        dots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => {
+                handleInteraction();
+                goTo(idx);
+            });
+        });
+
+        // Responsive Resize Switch
+        function onResize() {
+            if (isMobile()) {
+                goTo(currentSlide, false);
+                startAutoplay();
+            } else {
+                stopAutoplay();
+                track.style.transform = 'none';
+                track.style.transition = 'none';
+                slides.forEach(slide => slide.classList.remove('active'));
+            }
+        }
+
+        window.addEventListener('resize', onResize, { passive: true });
+
+        // Initialize
+        if (isMobile()) {
+            goTo(0, false);
+            startAutoplay();
+        }
+
+        return { goTo, next, prev, startAutoplay, stopAutoplay };
     }
 
-    window.addEventListener('resize', handleResize, { passive: true });
+    // Initialize 1. Products Carousel
+    initMobileCarousel({
+        wrapperSelector: '.product-carousel-wrapper',
+        trackSelector: '.product-carousel-track',
+        slideSelector: '.product-carousel-slide',
+        dotsSelector: '.carousel-dots .carousel-dot',
+        prevSelector: '.carousel-prev',
+        nextSelector: '.carousel-next',
+        delay: 3500
+    });
 
-    // Initial Setup
-    if (isMobileView()) {
-        goToSlide(0, false);
-        startAutoPlay();
-    }
+    // Initialize 2. Applications Carousel
+    initMobileCarousel({
+        wrapperSelector: '.app-carousel-wrapper',
+        trackSelector: '.app-carousel-track',
+        slideSelector: '.app-carousel-slide',
+        dotsSelector: '.app-carousel-dots .carousel-dot',
+        prevSelector: '.app-carousel-prev',
+        nextSelector: '.app-carousel-next',
+        delay: 3500
+    });
 
     /* ================= 4. DESKTOP PRODUCT CARDS 3D PERSPECTIVE HOVER ================= */
     const productCards = document.querySelectorAll('.product-card-3d');
     if (productCards.length > 0 && !prefersReducedMotion && !isTouchDevice) {
         productCards.forEach(card => {
             card.addEventListener('mousemove', (e) => {
-                if (isMobileView()) return;
+                if (window.innerWidth <= 768) return;
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -278,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             card.addEventListener('mouseleave', () => {
-                if (isMobileView()) return;
+                if (window.innerWidth <= 768) return;
                 card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
             });
         });
