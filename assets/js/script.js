@@ -124,13 +124,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isMobile()) return;
 
             if (animate) {
-                track.style.transition = 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
+                track.style.transition = 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
             } else {
                 track.style.transition = 'none';
             }
 
             const translatePercent = -(currentSlide * 100);
-            track.style.transform = `translateX(${translatePercent}%)`;
+            track.style.transform = `translate3d(${translatePercent}%, 0, 0)`;
 
             // Update active state on slides
             slides.forEach((slide, idx) => {
@@ -216,21 +216,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Navigation Controls
         if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 handleInteraction();
                 prev();
             });
         }
 
         if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 handleInteraction();
                 next();
             });
         }
 
         dots.forEach((dot, idx) => {
-            dot.addEventListener('click', () => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
                 handleInteraction();
                 goTo(idx);
             });
@@ -273,10 +276,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize 2. Applications Carousel
     initMobileCarousel({
-        wrapperSelector: '.app-carousel-wrapper',
-        trackSelector: '.app-carousel-track',
-        slideSelector: '.app-carousel-slide',
-        dotsSelector: '.app-carousel-dots .carousel-dot',
+        wrapperSelector: '.application-carousel',
+        trackSelector: '.application-carousel-track',
+        slideSelector: '.application-slide',
+        dotsSelector: '.application-carousel-dots .carousel-dot',
         prevSelector: '.app-carousel-prev',
         nextSelector: '.app-carousel-next',
         delay: 3500

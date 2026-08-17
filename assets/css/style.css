@@ -969,7 +969,7 @@ p:last-child {
     margin: 0;
 }
 
-/* ================= 11. 3D PRODUCT CARDS & MOBILE CAROUSEL ================= */
+/* ================= 11. 3D PRODUCT CARDS ================= */
 .product-carousel-wrapper {
     position: relative;
     width: 100%;
@@ -1196,17 +1196,30 @@ p:last-child {
     color: var(--text-muted);
 }
 
-/* ================= 13. TARGET APPLICATIONS GRID & CAROUSEL ================= */
-.app-carousel-wrapper {
+/* ================= 13. INDUSTRY PACKAGING APPLICATIONS (DESKTOP GRID DEFAULT) ================= */
+.application-carousel {
     position: relative;
     width: 100%;
 }
 
-.applications-grid {
+.application-carousel-viewport {
+    width: 100%;
+    overflow: visible;
+}
+
+.application-carousel-track {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.75rem;
     width: 100%;
+    transform: none !important;
+}
+
+.application-slide {
+    width: 100%;
+    display: block;
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 .app-card {
@@ -1729,7 +1742,10 @@ p:last-child {
 
 /* ================= 20. RESPONSIVE BREAKPOINTS ================= */
 @media (max-width: 1200px) {
-    .product-grid-4, .applications-grid {
+    .product-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .application-carousel-track {
         grid-template-columns: repeat(2, 1fr);
     }
     .process-timeline-grid {
@@ -1769,7 +1785,7 @@ p:last-child {
     }
 }
 
-/* ================= 21. MOBILE SPECIFIC (<= 768px): PREMIUM PRODUCT & APPLICATION CAROUSELS ================= */
+/* ================= 21. MOBILE SPECIFIC (<= 768px): TRUE HORIZONTAL CAROUSELS ================= */
 @media (max-width: 768px) {
     .section {
         padding: 4rem 0;
@@ -1805,54 +1821,48 @@ p:last-child {
         max-height: 300px;
     }
 
-    /* SHARED MOBILE HORIZONTAL CAROUSEL ARCHITECTURE */
-    .product-carousel-wrapper,
-    .app-carousel-wrapper {
+    /* PRODUCT CAROUSEL (<= 768px) */
+    .product-carousel-wrapper {
         position: relative;
         width: 100%;
         max-width: 100%;
-        overflow: hidden;
+        overflow: hidden !important;
         padding: 0.5rem 0 1rem;
         perspective: 1200px;
     }
 
-    .product-grid-4.product-carousel-track,
-    .applications-grid.app-carousel-track {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        gap: 0;
-        transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+    .product-grid-4.product-carousel-track {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
         touch-action: pan-y pinch-zoom;
         user-select: none;
         will-change: transform;
     }
 
-    .product-card-3d.product-carousel-slide,
-    .app-card.app-carousel-slide {
-        flex: 0 0 100%;
-        width: 100%;
-        min-width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 0 0.35rem;
-        transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease, filter 0.5s ease;
+    .product-card-3d.product-carousel-slide {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 0.35rem !important;
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease, filter 0.5s ease;
         opacity: 0.45;
         transform: scale(0.92);
         pointer-events: none;
     }
 
-    .product-card-3d.product-carousel-slide.active,
-    .app-card.app-carousel-slide.active {
-        opacity: 1;
-        transform: scale(1);
-        pointer-events: auto;
+    .product-card-3d.product-carousel-slide.active {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+        pointer-events: auto !important;
         box-shadow: 0 20px 45px -10px rgba(7, 21, 38, 0.2), 0 0 0 1px rgba(0, 102, 153, 0.25);
-    }
-
-    .app-card.app-carousel-slide {
-        height: 380px;
-        padding: 1.75rem;
     }
 
     .product-card-image {
@@ -1864,9 +1874,73 @@ p:last-child {
         max-height: 210px;
     }
 
-    /* Mobile Carousel Navigation & Dots */
+    /* APPLICATION CAROUSEL (<= 768px) */
+    .application-carousel {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .application-carousel-viewport {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden !important;
+        padding: 0.5rem 0 1rem;
+        perspective: 1200px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .application-carousel-track {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+        touch-action: pan-y pinch-zoom;
+        user-select: none;
+        will-change: transform;
+    }
+
+    .application-slide {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 0.35rem !important;
+        transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+        opacity: 0.45;
+        transform: scale(0.92);
+        pointer-events: none;
+    }
+
+    .application-slide.active {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+        pointer-events: auto !important;
+    }
+
+    .application-slide .app-card {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+        height: 420px !important;
+        min-height: 400px !important;
+        border-radius: var(--radius-lg);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 45px -10px rgba(7, 21, 38, 0.25), 0 0 0 1px rgba(0, 102, 153, 0.25);
+    }
+
+    /* SHARED MOBILE CONTROLS & PAGINATION */
     .mobile-carousel-controls {
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
         gap: 1.25rem;
@@ -1938,9 +2012,10 @@ p:last-child {
     .product-card-image img {
         max-height: 190px;
     }
-    .app-card.app-carousel-slide {
-        height: 350px;
-        padding: 1.5rem;
+    .application-slide .app-card {
+        height: 380px !important;
+        min-height: 360px !important;
+        padding: 1.5rem !important;
     }
 }
 
@@ -1952,7 +2027,7 @@ p:last-child {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-    .product-story-img, .hero-video-container, .product-carousel-track, .product-carousel-slide, .app-carousel-track, .app-carousel-slide {
+    .product-story-img, .hero-video-container, .product-carousel-track, .product-carousel-slide, .application-carousel-track, .application-slide {
         transform: none !important;
         animation: none !important;
         transition: none !important;
