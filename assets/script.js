@@ -5,13 +5,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user prefers reduced motion
+    // Motion preference & touch screen check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth < 992);
 
-    /* ================= 1. 3D HERO PRODUCT MOUSE PARALLAX & TILT ================= */
+    /* ================= 1. JIRO-INSPIRED 3D HERO MOUSE PARALLAX & TILT ================= */
     const heroStageCard = document.querySelector('.hero-stage-card');
     const heroProductImg = document.querySelector('.hero-product-img');
+    const heroFloorShadow = document.querySelector('.hero-floor-shadow');
+    const heroBackdropGlow = document.querySelector('.hero-backdrop-glow');
     const floatingBadges = document.querySelectorAll('.floating-3d-badge');
     const heroContainer = document.querySelector('.hero-stage-container');
 
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let mouseX = 0, mouseY = 0;
         let currentRx = 0, currentRy = 0;
         let targetRx = 0, targetRy = 0;
+        let glowTx = 0, glowTy = 0;
+        let targetGlowTx = 0, targetGlowTy = 0;
         let isHovered = false;
 
         heroContainer.addEventListener('mouseenter', () => {
@@ -27,8 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         heroContainer.addEventListener('mousemove', (e) => {
             const rect = heroContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left; // x position within container
-            const y = e.clientY - rect.top;  // y position within container
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
             
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
@@ -37,34 +41,53 @@ document.addEventListener('DOMContentLoaded', () => {
             const normX = (x - centerX) / centerX;
             const normY = (y - centerY) / centerY;
 
-            // Target 3D rotation angles (degrees)
-            targetRy = normX * 14;  // Rotate around Y axis
-            targetRx = -normY * 12; // Rotate around X axis
+            // Target 3D rotation angles
+            targetRy = normX * 16;  // Rotate around Y axis
+            targetRx = -normY * 14; // Rotate around X axis
+
+            // Background glow tracking
+            targetGlowTx = normX * 40;
+            targetGlowTy = normY * 30;
         });
 
         heroContainer.addEventListener('mouseleave', () => {
             isHovered = false;
             targetRx = 0;
             targetRy = 0;
+            targetGlowTx = 0;
+            targetGlowTy = 0;
         });
 
-        // Animation loop for fluid physics (Lerp)
+        // Animation loop for ultra-fluid physics (Lerp)
         function render3DHero() {
             if (!prefersReducedMotion && !isTouchDevice) {
-                // Smooth interpolation (lerp)
-                const factor = isHovered ? 0.08 : 0.05;
+                const factor = isHovered ? 0.085 : 0.05;
                 currentRx += (targetRx - currentRx) * factor;
                 currentRy += (targetRy - currentRy) * factor;
+                glowTx += (targetGlowTx - glowTx) * factor;
+                glowTy += (targetGlowTy - glowTy) * factor;
 
                 heroStageCard.style.transform = `rotateX(${currentRx.toFixed(2)}deg) rotateY(${currentRy.toFixed(2)}deg)`;
 
-                // Badges Parallax
+                // Dynamic Floor Shadow movement
+                if (heroFloorShadow) {
+                    const shadowTx = currentRy * -1.2;
+                    const shadowScale = 1 - Math.abs(currentRx) * 0.015;
+                    heroFloorShadow.style.transform = `rotateX(65deg) translate(${shadowTx.toFixed(1)}px, 0px) scale(${shadowScale.toFixed(2)})`;
+                }
+
+                // Dynamic Ambient Glow
+                if (heroBackdropGlow) {
+                    heroBackdropGlow.style.transform = `translateY(-50%) translate(${glowTx.toFixed(1)}px, ${glowTy.toFixed(1)}px)`;
+                }
+
+                // Multi-Depth Badges Parallax
                 floatingBadges.forEach((badge) => {
                     const depth = parseFloat(badge.getAttribute('data-depth') || '1');
-                    const badgeTx = currentRy * depth * 0.9;
-                    const badgeTy = currentRx * depth * -0.9;
-                    const baseZ = badge.classList.contains('floating-badge-top-right') ? 45 : 
-                                  badge.classList.contains('floating-badge-bottom-right') ? 50 : 35;
+                    const badgeTx = currentRy * depth * 0.95;
+                    const badgeTy = currentRx * depth * -0.95;
+                    const baseZ = badge.classList.contains('floating-badge-top-right') ? 60 : 
+                                  badge.classList.contains('floating-badge-bottom-right') ? 70 : 40;
                     badge.style.transform = `translateZ(${baseZ}px) translate(${badgeTx.toFixed(1)}px, ${badgeTy.toFixed(1)}px)`;
                 });
             }
@@ -74,49 +97,65 @@ document.addEventListener('DOMContentLoaded', () => {
         render3DHero();
     }
 
-    /* ================= 2. HERO PRODUCT SWITCHER TABS ================= */
+    /* ================= 2. HERO PRODUCT SWITCHER (500–800ms TRANSITION) ================= */
     const productTabs = document.querySelectorAll('.product-switch-tab');
     const heroMainImg = document.querySelector('.hero-product-img');
     const heroBadgeTopRight = document.querySelector('.floating-badge-top-right .floating-badge-info strong');
     const heroBadgeTopRightSub = document.querySelector('.floating-badge-top-right .floating-badge-info span');
+    const heroBadgeBottomLeft = document.querySelector('.floating-badge-bottom-left .floating-badge-info strong');
+    const heroBadgeBottomLeftSub = document.querySelector('.floating-badge-bottom-left .floating-badge-info span');
 
-    // Product Database for Hero 3D Showcase
     const heroProductData = {
         'rice': {
             img: 'assets/images/bopp-rice-bag.jpg',
-            alt: 'Premium BOPP Woven Rice Bag with handles',
-            badgeTitle: '10-Color HD Gravure',
-            badgeSub: 'High-Gloss Rice Packaging'
+            alt: 'Premium BOPP Woven Rice Bag with Handles',
+            badge1Title: '10-Color HD Gravure',
+            badge1Sub: 'High-Gloss Rice Packaging',
+            badge2Title: '100% Virgin Polymer',
+            badge2Sub: 'Zero-Pinhole Extrusion Bond'
         },
         'fertilizer': {
             img: 'assets/images/bopp-fertilizer-bag.jpg',
             alt: 'Heavy-Duty BOPP Fertilizer & Agro Sack',
-            badgeTitle: 'Micro-Perforated',
-            badgeSub: 'Chemical & Moisture Barrier'
+            badge1Title: 'Micro-Perforated',
+            badge1Sub: 'Chemical & Moisture Barrier',
+            badge2Title: '50kg Load Tenacity',
+            badge2Sub: 'Corrosion-Resistant Liner'
         },
         'cement': {
             img: 'assets/images/bopp-cement-bag.jpg',
             alt: 'AD*STAR Block Bottom Valve Cement Sack',
-            badgeTitle: 'Block Bottom Valve',
-            badgeSub: 'Zero-Spillage High-Speed Filling'
+            badge1Title: 'Block Bottom Valve',
+            badge1Sub: 'Zero-Spillage Rotor Packing',
+            badge2Title: 'Self-Closing Seal',
+            badge2Sub: 'High-Speed Automated Line'
         },
         'feed': {
             img: 'assets/images/bopp-animal-feed.jpg',
             alt: 'Aroma-Sealed BOPP Animal Feed & Pet Food Bag',
-            badgeTitle: 'Aroma & Fat Barrier',
-            badgeSub: 'Multi-Layer Pet Food Sacks'
+            badge1Title: 'Aroma & Fat Barrier',
+            badge1Sub: 'Multi-Layer Pet Food Sacks',
+            badge2Title: 'D-Cut Handle Option',
+            badge2Sub: 'Side Gusset Brand Print'
         },
         'sugar': {
             img: 'assets/images/bopp-sugar-bag.jpg',
             alt: 'Food-Grade BOPP Laminated Sugar Bag',
-            badgeTitle: 'Food Grade BRCGS',
-            badgeSub: 'Anti-Caking Extrusion Seal'
+            badge1Title: 'Food Grade BRCGS',
+            badge1Sub: 'Anti-Caking Extrusion Seal',
+            badge2Title: '100% FDA Approved',
+            badge2Sub: 'Crystal Moisture Protection'
         }
     };
+
+    let isSwitching = false;
 
     if (productTabs.length > 0 && heroMainImg) {
         productTabs.forEach(tab => {
             tab.addEventListener('click', () => {
+                if (isSwitching || tab.classList.contains('active')) return;
+                isSwitching = true;
+
                 productTabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
@@ -124,49 +163,120 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = heroProductData[key];
 
                 if (data) {
-                    // Smooth 3D flip out
-                    heroMainImg.style.opacity = '0';
-                    heroMainImg.style.transform = 'scale(0.92) rotateY(15deg)';
+                    // Outgoing 3D scale-down & rotation
+                    heroMainImg.classList.add('switching-out');
+                    heroMainImg.classList.remove('switching-in');
+
+                    // Fade out badge texts smoothly
+                    if (heroBadgeTopRight) heroBadgeTopRight.style.opacity = '0.2';
+                    if (heroBadgeTopRightSub) heroBadgeTopRightSub.style.opacity = '0.2';
+                    if (heroBadgeBottomLeft) heroBadgeBottomLeft.style.opacity = '0.2';
+                    if (heroBadgeBottomLeftSub) heroBadgeBottomLeftSub.style.opacity = '0.2';
 
                     setTimeout(() => {
                         heroMainImg.src = data.img;
                         heroMainImg.alt = data.alt;
-                        if (heroBadgeTopRight) heroBadgeTopRight.textContent = data.badgeTitle;
-                        if (heroBadgeTopRightSub) heroBadgeTopRightSub.textContent = data.badgeSub;
 
-                        // Smooth 3D flip in
-                        heroMainImg.style.opacity = '1';
-                        heroMainImg.style.transform = 'scale(1) rotateY(0deg)';
-                    }, 200);
+                        if (heroBadgeTopRight) {
+                            heroBadgeTopRight.textContent = data.badge1Title;
+                            heroBadgeTopRight.style.opacity = '1';
+                        }
+                        if (heroBadgeTopRightSub) {
+                            heroBadgeTopRightSub.textContent = data.badge1Sub;
+                            heroBadgeTopRightSub.style.opacity = '1';
+                        }
+                        if (heroBadgeBottomLeft) {
+                            heroBadgeBottomLeft.textContent = data.badge2Title;
+                            heroBadgeBottomLeft.style.opacity = '1';
+                        }
+                        if (heroBadgeBottomLeftSub) {
+                            heroBadgeBottomLeftSub.textContent = data.badge2Sub;
+                            heroBadgeBottomLeftSub.style.opacity = '1';
+                        }
+
+                        // Incoming 3D scale-up & rotation into place
+                        heroMainImg.classList.remove('switching-out');
+                        heroMainImg.classList.add('switching-in');
+
+                        setTimeout(() => {
+                            heroMainImg.classList.remove('switching-in');
+                            isSwitching = false;
+                        }, 500);
+                    }, 280);
+                } else {
+                    isSwitching = false;
                 }
             });
         });
     }
 
-    /* ================= 3. 2.5D BOPP BAG ANATOMY LAYER EXPLORER ================= */
-    const layerItems = document.querySelectorAll('.layer-item-card');
-    const showcaseBagImg = document.querySelector('.showcase-bag-img');
+    /* ================= 3. PRODUCT CARDS 3D PERSPECTIVE HOVER ================= */
+    const productCards = document.querySelectorAll('.product-card-3d');
+    if (productCards.length > 0 && !prefersReducedMotion && !isTouchDevice) {
+        productCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = -((y - centerY) / centerY) * 8;
+                const rotateY = ((x - centerX) / centerX) * 8;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-8px)`;
+            });
 
-    if (layerItems.length > 0 && showcaseBagImg) {
-        layerItems.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                layerItems.forEach(l => l.classList.remove('active'));
-                item.classList.add('active');
-
-                // Dynamic visual shift based on selected layer
-                const angles = [
-                    { ry: -8, rx: 4, scale: 1.02 },
-                    { ry: -14, rx: 6, scale: 1.05 },
-                    { ry: 4, rx: -4, scale: 1.03 },
-                    { ry: 10, rx: 8, scale: 1.06 }
-                ];
-                const angle = angles[index] || angles[0];
-                showcaseBagImg.style.transform = `rotateY(${angle.ry}deg) rotateX(${angle.rx}deg) scale(${angle.scale})`;
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
             });
         });
     }
 
-    /* ================= 4. ANIMATED STATISTICS COUNTER ON SCROLL ================= */
+    /* ================= 4. MANUFACTURING TIMELINE SCROLL PROGRESSION ================= */
+    const processSection = document.querySelector('.process-section');
+    const processProgressBar = document.querySelector('.process-timeline-progress-fill');
+    const stepNodes = document.querySelectorAll('.process-step-node');
+
+    function updateProcessTimeline() {
+        if (!processSection || !processProgressBar) return;
+        const rect = processSection.getBoundingClientRect();
+        const winHeight = window.innerHeight;
+
+        if (rect.top < winHeight && rect.bottom > 0) {
+            const totalScrollable = winHeight + rect.height;
+            const currentScroll = winHeight - rect.top;
+            const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable));
+            const fillPercent = Math.min(100, progress * 130);
+            processProgressBar.style.width = `${fillPercent}%`;
+
+            // Highlight step nodes progressively
+            stepNodes.forEach((node, idx) => {
+                const nodeThreshold = (idx + 0.5) / stepNodes.length;
+                if (progress >= nodeThreshold) {
+                    node.classList.add('active');
+                } else {
+                    node.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    window.addEventListener('scroll', updateProcessTimeline, { passive: true });
+    updateProcessTimeline();
+
+    // Hover on step nodes to highlight progress
+    stepNodes.forEach((node, idx) => {
+        node.addEventListener('mouseenter', () => {
+            stepNodes.forEach((n, i) => {
+                if (i <= idx) n.classList.add('active');
+                else n.classList.remove('active');
+            });
+            if (processProgressBar) {
+                processProgressBar.style.width = `${((idx + 1) / stepNodes.length) * 100}%`;
+            }
+        });
+    });
+
+    /* ================= 5. STATISTICS ANIMATED COUNTER (WITH IMMEDIATE FALLBACK) ================= */
     const statElements = document.querySelectorAll('.stat-number');
     let countersAnimated = false;
 
@@ -175,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statElements.forEach(stat => {
             const rect = stat.getBoundingClientRect();
-            if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) {
+            if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
                 const targetValue = parseInt(stat.getAttribute('data-target') || stat.textContent.trim(), 10);
                 if (isNaN(targetValue)) return;
 
@@ -186,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 function updateCounter(currentTime) {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    // EaseOutExpo curve
                     const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
                     const currentVal = Math.floor(easeProgress * targetValue);
 
@@ -208,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', animateStats, { passive: true });
     animateStats(); // Initial check
 
-    /* ================= 5. SCROLL REVEAL (INTERSECTION OBSERVER) ================= */
+    /* ================= 6. SCROLL REVEAL (INTERSECTION OBSERVER) ================= */
     const revealElements = document.querySelectorAll('.reveal-init');
 
     if ('IntersectionObserver' in window && revealElements.length > 0) {
@@ -220,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }, {
-            threshold: 0.12,
+            threshold: 0.1,
             rootMargin: '0px 0px -40px 0px'
         });
 
@@ -229,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         revealElements.forEach(el => el.classList.add('revealed'));
     }
 
-    /* ================= 6. STICKY HEADER ELEVATION ================= */
+    /* ================= 7. STICKY HEADER ELEVATION ================= */
     const siteHeader = document.querySelector('.site-header');
     window.addEventListener('scroll', () => {
         if (siteHeader) {
@@ -242,21 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, { passive: true });
-
-    /* ================= 7. FAQ ACCORDION ================= */
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        if (question) {
-            question.addEventListener('click', () => {
-                const isActive = item.classList.contains('active');
-                faqItems.forEach(other => other.classList.remove('active'));
-                if (!isActive) {
-                    item.classList.add('active');
-                }
-            });
-        }
-    });
 
     /* ================= 8. RFQ QUOTE MODAL ================= */
     const modal = document.getElementById('quoteModal');
@@ -304,7 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Escape key listener for modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
             closeModal();
@@ -337,47 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileClose) mobileClose.addEventListener('click', closeMobileNav);
     if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileNav);
 
-    /* ================= 10. PRODUCT CATEGORY FILTER (products.html) ================= */
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const productCards = document.querySelectorAll('.product-grid .product-card');
-
-    if (filterButtons.length > 0 && productCards.length > 0) {
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const filterValue = btn.getAttribute('data-filter');
-
-                productCards.forEach(card => {
-                    const category = card.getAttribute('data-category');
-                    if (filterValue === 'all' || category === filterValue || (category && category.includes(filterValue))) {
-                        card.style.display = 'flex';
-                        setTimeout(() => { card.style.opacity = '1'; }, 50);
-                    } else {
-                        card.style.opacity = '0';
-                        setTimeout(() => { card.style.display = 'none'; }, 200);
-                    }
-                });
-            });
-        });
-    }
-
-    /* ================= 11. PRODUCT DETAIL IMAGE SWITCHER (product-detail.html) ================= */
-    const mainDetailImg = document.querySelector('.gallery-main img');
-    const thumbItems = document.querySelectorAll('.thumb-item');
-
-    if (mainDetailImg && thumbItems.length > 0) {
-        thumbItems.forEach(thumb => {
-            thumb.addEventListener('click', () => {
-                thumbItems.forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
-                const newSrc = thumb.querySelector('img').getAttribute('src');
-                mainDetailImg.setAttribute('src', newSrc);
-            });
-        });
-    }
-
-    /* ================= 12. BACK TO TOP BUTTON ================= */
+    /* ================= 10. BACK TO TOP BUTTON ================= */
     const backToTopBtn = document.querySelector('.back-to-top');
     if (backToTopBtn) {
         window.addEventListener('scroll', () => {
@@ -393,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* ================= 13. FORM SUBMISSION FEEDBACK ================= */
+    /* ================= 11. FORM SUBMISSION FEEDBACK ================= */
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', (e) => {
